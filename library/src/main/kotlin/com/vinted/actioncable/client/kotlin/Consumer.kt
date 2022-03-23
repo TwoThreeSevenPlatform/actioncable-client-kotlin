@@ -1,5 +1,7 @@
 package com.vinted.actioncable.client.kotlin
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.vinted.actioncable.client.kotlin.Message.Type.*
 import java.net.URI
 
@@ -35,6 +37,8 @@ class Consumer(
 
     val subscriptions: Subscriptions = Subscriptions(this)
 
+    var onDisconnectMessageReceived: ((reconnect: Boolean?, reason: String?) -> Unit)? = null
+
     private val connection: Connection = Connection(uri, options.connection)
 
     private val connectionMonitor: ConnectionMonitor = ConnectionMonitor(connection, options.connection)
@@ -54,6 +58,10 @@ class Consumer(
                 CONFIRMATION -> subscriptions.notifyConnected(parsedMessage.identifier!!)
                 REJECTION -> subscriptions.reject(parsedMessage.identifier!!)
                 MESSAGE -> subscriptions.notifyReceived(parsedMessage.identifier!!, parsedMessage.body)
+                DISCONNECT -> {
+                    val map = jsonString.dictFromJson()
+                    onDisconnectMessageReceived?.invoke(map["reconnect"] as? Boolean, map["reason"] as? String)
+                }
             }
         }
 
@@ -86,4 +94,9 @@ class Consumer(
     }
 
     fun send(command: Command) = connection.send(command)
+}
+
+private fun String.dictFromJson(): Map<String, Any?> {
+    val type = object : TypeToken<Map<String, Any?>>() {}.type
+    return Gson().fromJson(this, type)
 }

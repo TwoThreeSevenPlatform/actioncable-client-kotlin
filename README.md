@@ -37,7 +37,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.vinted:actioncable-client-kotlin:<version>'
+    implementation 'com.github.TwoThreeSevenPlatform:actioncable-client-kotlin:<version>'
 }
 ```
 

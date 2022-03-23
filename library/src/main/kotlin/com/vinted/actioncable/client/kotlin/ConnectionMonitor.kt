@@ -65,6 +65,7 @@ class ConnectionMonitor(
     }
 
     private fun reset() {
+        connectionTerminated = false
         reconnectAttempts = 0
     }
 
